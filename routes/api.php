@@ -27,7 +27,7 @@ Route::prefix('v1')->group(function () {
     // User preferences endpoints
     Route::prefix('preferences')->group(function () {
         Route::get('/', [PreferenceController::class, 'show']);
-        Route::post('/', [PreferenceController::class, 'update']);
-        Route::delete('/', [PreferenceController::class, 'reset']);
+        Route::post('/update', [PreferenceController::class, 'update']);
+        Route::delete('/reset', [PreferenceController::class, 'reset']);
     });
 });
