@@ -87,7 +87,7 @@ php artisan news:fetch --source=nyt
 ### Article Query Parameters
 
 | Parameter      | Example                         | Description                                |
-| ---------- ----|---------------------------------|--------------------------------------------|
+| -------------  | -----------------------------   | ----------------------------------------   |
 | `q`            | `?q=Michael`                    | Filter the 'title','description','content' |
 | `sources`      | `?sources[0]=guardian`          | Filter by source                           |   
 | `categories`   | `?categories[0]=Business`       | Filter by category                         |
@@ -97,4 +97,4 @@ php artisan news:fetch --source=nyt
 | `sort_by`      | `?sort_by=published_at`         | Search by published_at,title,view_count.   | 
 | `sort_order`   | `?sort_order=desc`              | Search by asc,desc.                        | 
 | `per_page`     | `?per_page=published_at`        | Search by published_at,title,view_count.   | 
-| `live_search`  | `?live_search=published_at`     | Search by 0,1.                             | 
+| `live_search`  | `?live_search=published_at`     | Search by 0,1.                             |
