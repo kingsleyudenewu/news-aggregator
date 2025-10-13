@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class GuardianApiAdapter extends BaseNewsAdapter
 {
-    protected string $sourceName = 'The Guardian';
+    protected string $sourceName = 'guardian';
     public function __construct()
     {
         $this->apiKey = config('services.guardian.key');
@@ -51,6 +51,7 @@ class GuardianApiAdapter extends BaseNewsAdapter
     public function fetchArticles(array $params = []): Collection
     {
         $defaultParams = [
+            'api-key' => $this->apiKey,
             'show-fields' => 'all',
             'page-size' => $params['page_size'] ?? 50,
             'order-by' => 'newest',
@@ -58,20 +59,22 @@ class GuardianApiAdapter extends BaseNewsAdapter
 
         $params = array_merge($defaultParams, $params);
         $url = $this->buildRequestUrl('search', $params);
-        $response = $this->makeRequest($url);
+        
+        $response = $this->makeRequest($url, $params);
 
         if(!$response || !isset($response['response']['results'])) {
             return collect();
         }
+
         return $this->parseArticles($response['response']['results']);
     }
 
     public function searchArticles(string $query, array $filters = []): Collection
     {
         $endpoint = 'search';
-        $params = array_merge(['q' => $query, 'show-fields' => 'all', 'page-size' => $filters['pageSize'] ?? 50], $filters);
+        $params = array_merge(['q' => $query, 'show-fields' => 'all', 'page-size' => $filters['pageSize'] ?? 50, 'api-key' => $this->apiKey], $filters);
         $url = $this->buildRequestUrl($endpoint, $params);
-        $response = $this->makeRequest($url);
+        $response = $this->makeRequest($url, $params);
 
         if(!$response || !isset($response['response']['results'])) {
             return collect();

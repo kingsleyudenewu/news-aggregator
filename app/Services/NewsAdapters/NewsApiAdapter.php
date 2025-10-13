@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class NewsApiAdapter extends BaseNewsAdapter
 {
-    protected string $sourceName = 'NewsAPI';
+    protected string $sourceName = 'newsapi';
     public function __construct()
     {
         $this->apiKey = config('services.newsapi.key');
@@ -65,8 +65,9 @@ class NewsApiAdapter extends BaseNewsAdapter
 
     public function fetchArticles(array $params = []): Collection
     {
+        $params = array_merge($params, ['language' => 'en']);
         $url = $this->buildRequestUrl('top-headlines', $params);
-        $response = $this->makeRequest($url);
+        $response = $this->makeRequest($url, $params, ['x-api-key' => $this->apiKey]);
 
         if(!$response || empty(data_get($response, 'articles', []))) {
             return collect();
@@ -89,7 +90,7 @@ class NewsApiAdapter extends BaseNewsAdapter
             'pageSize' => $filters['perPage'] ?? 100,
         ]);
         $url = $this->buildRequestUrl($endpoint, $params);
-        $response = $this->makeRequest($url);
+        $response = $this->makeRequest($url, $params, ['x-api-key' => $this->apiKey]);
 
         if(!$response || empty(data_get($response, 'articles', []))) {
             return collect();

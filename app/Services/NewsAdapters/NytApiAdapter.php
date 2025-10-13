@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class NytApiAdapter extends BaseNewsAdapter
 {
-    protected string $sourceName = 'The New York Times';
+    protected string $sourceName = 'nytimes';
 
     public function __construct()
     {
@@ -18,7 +18,7 @@ class NytApiAdapter extends BaseNewsAdapter
 
     public function buildRequestUrl(string $endpoint, array $params): string
     {
-        $params['apiKey'] = $this->apiKey;
+        $params['api-key'] = $this->apiKey;
         $query = http_build_query($params);
         return rtrim($this->baseUrl, '/') . '/' . $endpoint . '?' . $query;
     }
@@ -27,13 +27,11 @@ class NytApiAdapter extends BaseNewsAdapter
     {
         return collect($articles)->map(function ($article) {
             $multimedia = collect($article['multimedia'] ?? []);
-            $image = $multimedia->firstWhere('format', 'mediumThreeByTwo440');
-
-            $fields = $article['fields'] ?? [];
+            $image = $multimedia->firstWhere('format', 'threeByTwoSmallAt2X');
 
             return new ArticleDTO(
                 title: $article['title'] ?? 'Untitled',
-                description: $fields['abstract'] ?? null,
+                description: $article['abstract'] ?? null,
                 content: null,
                 author: $article['byline'] ?? null,
                 sourceName: $this->sourceName,
@@ -52,13 +50,18 @@ class NytApiAdapter extends BaseNewsAdapter
         })->filter(fn($article) => $article !== null);
     }
 
-    public function fetchArticles(array $articles = []): Collection
+    public function fetchArticles(array $params = []): Collection
     {
-        // Example: fetch top stories
+        $params = array_merge($params, [
+            'api-key' => $this->apiKey,
+        ]);
+        
         $endpoint = 'topstories/v2/home.json';
-        $url = $this->buildRequestUrl($endpoint, []);
-        $response = $this->makeRequest($url);
-        return $this->parseArticles($response);
+        $url = $this->buildRequestUrl($endpoint, $params);
+        
+        $response = $this->makeRequest($url, $params);
+        
+        return $this->parseArticles($response['results']);
     }
 
     public function getCategories(): array
@@ -103,7 +106,8 @@ class NytApiAdapter extends BaseNewsAdapter
     public function searchArticles(string $query, array $filters = []): Collection
     {
         $endpoint = 'search/v2/articlesearch.json';
-        $params = array_merge(['q' => $query, 'sort' => $filters['sort'] ?? 'newest', 'page' => $filters['page'] ?? 0], $filters);
+        
+        $params = array_merge(['q' => $query, 'sort' => $filters['sort'] ?? 'newest', 'page' => $filters['page'] ?? 0, 'api-key' => $this->apiKey], $filters);
 
         if (isset($filters['begin_date'])) {
             $params['begin_date'] = Carbon::parse($filters['begin_date'])->format('Ymd');

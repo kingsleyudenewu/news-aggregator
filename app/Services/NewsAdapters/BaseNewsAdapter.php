@@ -21,11 +21,12 @@ abstract class BaseNewsAdapter implements NewsSourceInterface
     abstract public function parseArticles(array $response): Collection;
     abstract public function buildRequestUrl(string $endpoint, array $params): string;
 
-    protected function makeRequest(string $url, array $params = []): ?array
+    protected function makeRequest(string $url, array $params = [], $headers = []): ?array
     {
         try {
             $response = Http::timeout($this->timeout)
                 ->retry($this->retryTimes, $this->retryDelay)
+                ->withHeaders($headers)
                 ->get($url, $params);
 
             if ($response->successful()) {
