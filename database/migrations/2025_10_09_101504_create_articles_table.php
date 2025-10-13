@@ -22,9 +22,9 @@ return new class extends Migration
             $table->string('author')->nullable()->index();
             $table->string('source_name')->index();
             $table->string('source_id')->index();
-            $table->string('category', 50)->nullable()->index();
+            $table->string('category')->nullable()->index();
             $table->string('url')->unique();
-            $table->string('image_url')->nullable();
+            $table->text('image_url')->nullable();
             $table->timestamp('published_at')->index();
             $table->json('metadata')->nullable();
             $table->string('content_hash')->unique();
