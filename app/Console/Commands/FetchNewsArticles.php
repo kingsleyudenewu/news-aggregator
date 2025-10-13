@@ -37,35 +37,14 @@ class FetchNewsArticles extends Command
         
         try {
             if ($source === 'all') {
-                $results = $this->aggregator->fetchFromAllSources();
-                
-                foreach ($results['sources'] as $sourceName => $sourceResults) {
-                    if (isset($sourceResults['error'])) {
-                        $this->error("Failed to fetch from {$sourceName}: {$sourceResults['error']}");
-                    } else {
-                        $this->info("Fetched from {$sourceName}: {$sourceResults['saved']} saved, {$sourceResults['duplicates']} duplicates");
-                    }
-                }
-                
-                $this->info("Total articles saved: {$results['success']}");
-                $this->info("Total duplicates: {$results['duplicates']}");
-                
+                $this->fetchAllSources();
             } else {
-                // Fetch from specific source
                 $this->info("Fetching from {$source}...");
-                // Implementation for specific source
-                $adapter = $this->createAdapterInstance($this->availableSources[$source]);
-                $results = $this->aggregator->fetchFromSource($adapter);
-
-                if (isset($results['error'])) {
-                    $this->error("Failed to fetch from {$source}: {$results['error']}");
-                } else {
-                    $this->info("Fetched from {$source}: {$results['saved']} saved, {$results['duplicates']} duplicates");
-                }
+                $this->fetchFromSource($source);
             }
             
             Log::info('News fetch completed', ['results' => $results ?? []]);
-            
+
             return Command::SUCCESS;
             
         } catch (Exception $e) {
@@ -73,6 +52,41 @@ class FetchNewsArticles extends Command
             Log::error('News fetch failed', ['error' => $e->getMessage()]);
             
             return Command::FAILURE;
+        }
+    }
+
+    private function fetchAllSources()
+    {
+        $results = $this->aggregator->fetchFromAllSources();
+                
+        foreach ($results['sources'] as $sourceName => $sourceResults) {
+            if (isset($sourceResults['error'])) {
+                $this->error("Failed to fetch from {$sourceName}: {$sourceResults['error']}");
+            } else {
+                $this->info("Fetched from {$sourceName}: {$sourceResults['saved']} saved, {$sourceResults['duplicates']} duplicates");
+            }
+        }
+        
+        $this->info("Total articles saved: {$results['success']}");
+        $this->info("Total duplicates: {$results['duplicates']}");
+    }
+
+    private function fetchFromSource(string $source)
+    {
+        if (!array_key_exists($source, $this->availableSources)) {
+            $this->error("Source {$source} is not supported.");
+            return;
+        }
+
+        $adapterClass = $this->availableSources[$source];
+        $adapter = $this->createAdapterInstance($adapterClass);
+
+        $results = $this->aggregator->fetchFromSource($adapter);
+
+        if (isset($results['error'])) {
+            $this->error("Failed to fetch from {$source}: {$results['error']}");
+        } else {
+            $this->info("Fetched from {$source}: {$results['saved']} saved, {$results['duplicates']} duplicates");
         }
     }
 
