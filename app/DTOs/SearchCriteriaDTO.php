@@ -7,7 +7,7 @@ use Illuminate\Support\Carbon;
 class SearchCriteriaDTO
 {
     public function __construct(
-        public readonly ?string $query = null,
+        public readonly ?string $q = null,
         public readonly ?array $sources = null,
         public readonly ?array $categories = null,
         public readonly ?array $authors = null,
@@ -22,7 +22,7 @@ class SearchCriteriaDTO
     public static function fromRequest(array $data): self
     {
         return new self(
-            query: $data['query'] ?? null,
+            q: $data['q'] ?? null,
             sources: $data['sources'] ?? null,
             categories: $data['categories'] ?? null,
             authors: $data['authors'] ?? null,
