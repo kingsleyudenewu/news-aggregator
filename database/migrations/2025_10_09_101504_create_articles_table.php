@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('source_name')->index();
             $table->string('source_id')->index();
             $table->string('category', 50)->nullable()->index();
-            $table->string('url', 50)->unique();
+            $table->string('url')->unique();
             $table->string('image_url')->nullable();
             $table->timestamp('published_at')->index();
             $table->json('metadata')->nullable();
