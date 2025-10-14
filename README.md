@@ -38,9 +38,11 @@ cp .env.example .env
 composer install
 ```
 
-php artisan migrate
+4. **Run Migration**
+```bash
+ php artisan migrate
 ```
-## Background Article Fetching
+5. **Run artisan command to fetch articles**
 ```bash
 php artisan news:fetch
 
