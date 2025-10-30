@@ -21,4 +21,6 @@ interface ArticleRepositoryInterface
     public function getLatestBySource(string $source, int $limit = 10): Collection;
 
     public function deleteOlderThan(\DateTime $dateTime): int;
+    public function incrementViewCount(int $id): void;
+    public function getPopularArticles(int $limit): Collection;
 }

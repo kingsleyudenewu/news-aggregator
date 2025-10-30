@@ -63,16 +63,6 @@ class ArticleRepository implements ArticleRepositoryInterface
             $query->where('published_at', '<=', $criteria->dateTo);
         }
         
-        // Exclude keywords
-        // if ($criteria->excludeKeywords) {
-        //     foreach ($criteria->excludeKeywords as $keyword) {
-        //         $query->where(function ($q) use ($keyword) {
-        //             $q->where('title', 'not like', "%{$keyword}%")
-        //               ->where('description', 'not like', "%{$keyword}%");
-        //         });
-        //     }
-        // }
-        
         // Apply sorting
         $query->orderBy($criteria->sortBy, $criteria->sortOrder);
         

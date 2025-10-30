@@ -2,12 +2,12 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\ArticleRepositoryInterface;
-use App\DTOs\SearchCriteriaDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterArticlesRequest;
 use App\Http\Requests\SearchArticlesRequest;
 use App\Http\Resources\ArticleCollection;
 use App\Http\Resources\ArticleResource;
+use App\Services\Articles\ArticleService;
 use App\Services\Cache\ArticleCacheService;
 use App\Services\NewsAggregator\AggregatorService;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +22,8 @@ class ArticleController extends Controller
     public function __construct(
         ArticleRepositoryInterface $repository,
         AggregatorService $aggregator,
-        ArticleCacheService $cache
+        ArticleCacheService $cache,
+        private ArticleService $articleService
     ) {
         $this->repository = $repository;
         $this->aggregator = $aggregator;
@@ -34,14 +35,7 @@ class ArticleController extends Controller
      */
     public function index(FilterArticlesRequest $request): ArticleCollection
     {
-        $cacheKey = 'articles_' . md5(json_encode($request->validated()));
-        
-        $articles = $this->cache->remember($cacheKey, 600, function () use ($request) {
-            return $this->repository->getByFilters(
-                $request->validated(),
-                $request->input('per_page', 20)
-            );
-        });
+        $articles = $this->articleService->fetchLatestArticles($request);
         
         return new ArticleCollection($articles);
     }
@@ -51,21 +45,7 @@ class ArticleController extends Controller
      */
     public function search(SearchArticlesRequest $request): JsonResponse
     {
-        $criteria = SearchCriteriaDTO::fromRequest($request->validated());
-        
-        // Search in database first
-        $articles = $this->repository->search($criteria);
-        
-        // If results are limited, search live sources
-        if ($articles->total() < 10 && $request->input('live_search', false)) {
-            $liveArticles = $this->aggregator->searchAcrossSources(
-                $criteria->q,
-                $request->validated()
-            );
-            
-            // Re-search database after new articles are saved
-            $articles = $this->repository->search($criteria);
-        }
+        $articles = $this->articleService->searchArticles($request);
         
         return response()->json([
             'data' => ArticleResource::collection($articles->items()),
@@ -110,10 +90,7 @@ class ArticleController extends Controller
      */
     public function byCategory(Request $request, string $category): ArticleCollection
     {
-        $articles = $this->repository->getByFilters(
-            ['category' => $category],
-            $request->input('per_page', 20)
-        );
+        $articles = $this->articleService->filterByCategory($request, $category);
         
         return new ArticleCollection($articles);
     }
@@ -122,12 +99,8 @@ class ArticleController extends Controller
      * Get popular articles
      */
     public function popular(Request $request): JsonResponse
-    {
-        $limit = $request->input('limit', 10);
-        
-        $articles = $this->cache->remember("popular_{$limit}", 1800, function () use ($limit) {
-            return $this->repository->getPopularArticles($limit);
-        });
+    {        
+        $articles = $this->articleService->fetchPopularArticles($request);
         
         return response()->json([
             'data' => ArticleResource::collection($articles)

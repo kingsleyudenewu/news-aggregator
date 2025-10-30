@@ -59,6 +59,15 @@ OR
 php artisan news:fetch --source=nyt
 ```
 
+6. **Run artisan command like a cron job (optional)**
+```bash
+php artisan schedule:work
+```
+7. **Run artisan job command**
+```bash
+php artisan queue:work
+```
+
 ## Endpoints
 
 

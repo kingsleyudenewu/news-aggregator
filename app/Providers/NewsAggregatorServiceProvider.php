@@ -7,6 +7,7 @@ use App\Services\NewsAdapters\GuardianApiAdapter;
 use App\Services\NewsAdapters\NewsApiAdapter;
 use App\Services\NewsAdapters\NytApiAdapter;
 use App\Services\NewsAggregator\AggregatorService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class NewsAggregatorServiceProvider extends ServiceProvider
@@ -50,8 +51,14 @@ class NewsAggregatorServiceProvider extends ServiceProvider
             
             // Fetch articles every 30 minutes
             $schedule->command('news:fetch')
-                ->everyThirtyMinutes()
+                ->everyMinute()
                 ->withoutOverlapping()
+                ->onSuccess(function () {
+                    Log::info('News fetch completed successfully');
+                })
+                ->onFailure(function () {
+                    Log::error('News fetch failed');
+                })
                 ->appendOutputTo(storage_path('logs/news-fetch.log'));
         });
     }
