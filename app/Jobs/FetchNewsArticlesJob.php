@@ -23,6 +23,20 @@ class FetchNewsArticlesJob implements ShouldQueue
     ];
 
     /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var array<int>
+     */
+    public $backoff = [60, 300, 900]; // 1min, 5min, 15min retry delays
+
+    /**
      * Create a new job instance.
      */
     public function __construct(public string $source)
